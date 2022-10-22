@@ -10,8 +10,8 @@ def lambda_handler(event, context):
   TOKEN = EVENT_BODY["TOKEN"]
   VEHICLE_ID = EVENT_BODY["VEHICLE_ID"]
   INPUT_CMD = EVENT_BODY["INPUT_CMD"]
-  PARAMETER_1 = EVENT_BODY["PARAMETER_1"]
-  PARAMETER_2 = EVENT_BODY["PARAMETER_2"]
+  PARAMETER_1 = EVENT_BODY.get("PARAMETER_1", "")
+  PARAMETER_2 = EVENT_BODY.get("PARAMETER_2", "")
   SNS_CLIENT = boto3.client('sns')
   TOPIC_ARN = os.environ.get('SNS_TOPIC_ARN')
 
@@ -21,8 +21,8 @@ def lambda_handler(event, context):
   else:
     CLIENT_IP_ADDRESS = "127.0.0.1"
   ##################################################################################################################
-  
-  # Function that retrieves the vehicle's status and returns it 
+
+  # Function that retrieves the vehicle's status and returns it
   def GetVehicleState(BASE_URL, VEHICLE_ID):
     # Variables
     HEADERS = {

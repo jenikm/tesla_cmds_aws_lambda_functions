@@ -4,7 +4,7 @@ import json,urllib3,time
 def lambda_handler(event, context):
   # Decode pub/sub message body and convert from string back to JSON object
   MESSAGE_BODY_STR = event['Records'][0]['Sns']['Message']
-  MESSAGE_BODY = json.loads(MESSAGE_BODY_STR) 
+  MESSAGE_BODY = json.loads(MESSAGE_BODY_STR)
 
   ########################################### Global Variables #####################################################
   BASE_URL = "https://owner-api.teslamotors.com/api/1/vehicles/"
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
 
     return(TESTVAR)
 
-  # Function that retrieves the vehicle's data and returns it 
+  # Function that retrieves the vehicle's data and returns it
   def GetVehicleData(BASE_URL, VEHICLE_ID):
     # Variables
     HEADERS = {
@@ -44,7 +44,7 @@ def lambda_handler(event, context):
 
     return(VEHICLE_DATA)
 
-  # Function that retrieves the vehicle's drive data and returns it 
+  # Function that retrieves the vehicle's drive data and returns it
   def GetVehicleDriveData(BASE_URL, VEHICLE_ID):
     # Variables
     HEADERS = {
@@ -63,7 +63,7 @@ def lambda_handler(event, context):
 
     return(VEHICLE_DATA)
 
-  # Function that retrieves the vehicle's status and returns it 
+  # Function that retrieves the vehicle's status and returns it
   def GetVehicleState(BASE_URL, VEHICLE_ID):
     VEHICLE_DATA = GetVehicleData(BASE_URL, VEHICLE_ID)
     VEHICLE_STATE = VEHICLE_DATA["response"]["state"]
@@ -96,7 +96,7 @@ def lambda_handler(event, context):
   def GetFrontPassengerSeatPosition(BASE_URL, VEHICLE_ID):
     # Variables
     DRIVER_SEAT_POSITION = GetDriverSeatPosition(BASE_URL, VEHICLE_ID)
-    
+
     if DRIVER_SEAT_POSITION == 0:
       FRONT_PASSENGER_SEAT_POSITION = 1
     else:
@@ -120,7 +120,7 @@ def lambda_handler(event, context):
       headers=HEADERS
     )
     HTTP_REQUEST_STATUS_CODE = HTTP_REQUEST.status
-    
+
     # Only for debug
     # HTTP_REQUEST = URL + HEADERS
     # HTTP_REQUEST_STATUS_CODE = 200
@@ -376,7 +376,7 @@ def lambda_handler(event, context):
       body=ENCODED_DATA
     )
     HTTP_REQUEST_STATUS_CODE = HTTP_REQUEST.status
-    
+
     if HTTP_REQUEST_STATUS_CODE == 200:
       print("The vehicle's " + str(SEAT_HEATER_POSITION) + " seat heater has been set to " + str(SEAT_HEATER_LEVEL))
     else:
@@ -399,7 +399,7 @@ def lambda_handler(event, context):
       FRONT_PASSENGER_SEAT_POSITION = 1
     else:
       FRONT_PASSENGER_SEAT_POSITION = 0
-    
+
     SetSeatHeater(BASE_URL, VEHICLE_ID, FRONT_PASSENGER_SEAT_POSITION, SEAT_HEATER_LEVEL)
 
   # Function that deactivates the driver's seat heater
@@ -419,7 +419,7 @@ def lambda_handler(event, context):
       FRONT_PASSENGER_SEAT_POSITION = 1
     else:
       FRONT_PASSENGER_SEAT_POSITION = 0
-    
+
     SetSeatHeater(BASE_URL, VEHICLE_ID, FRONT_PASSENGER_SEAT_POSITION, SEAT_HEATER_LEVEL)
 
   # Function that activates the vehicle's sentry mode system
@@ -915,7 +915,7 @@ def lambda_handler(event, context):
     elif INPUT_CMD == "close_charge_port_door":
       CloseChargePortDoor(BASE_URL, VEHICLE_ID)
     elif INPUT_CMD == "set_charging_amps":
-      SetChargingAmps(BASE_URL, VEHICLE_ID, PARAMETER_1)    
+      SetChargingAmps(BASE_URL, VEHICLE_ID, PARAMETER_1)
     elif INPUT_CMD == "enable_scheduled_charging":
       EnableScheduledCharging(BASE_URL, VEHICLE_ID, PARAMETER_1)
     elif INPUT_CMD == "disable_scheduled_charging":
