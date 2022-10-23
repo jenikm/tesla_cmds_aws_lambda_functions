@@ -979,6 +979,11 @@ def lambda_handler(event, context):
         StartCharging(BASE_URL, VEHICLE_ID)
       else:
         show_state("skipping")
+    elif INPUT_CMD == "prepare_for_home_departure":
+      UnlockDoors(BASE_URL, VEHICLE_ID)
+      StopCharging(BASE_URL, VEHICLE_ID)
+      OpenChargePortDoor(BASE_URL, VEHICLE_ID)
+      ActuateTrunk(BASE_URL, VEHICLE_ID)
     else:
       print("ERROR: " + INPUT_CMD + " is not a recognized command")
 
