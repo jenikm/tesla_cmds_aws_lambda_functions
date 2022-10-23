@@ -1,0 +1,55 @@
+# Welcome to Serverless!
+
+service: tesla-apis-v1
+
+package:
+  patterns:
+    - backend
+    - frontend
+
+frameworkVersion: '3'
+
+custom:
+  stage: dev
+  region: us-east-1
+  topicName: "${self:service}-command-tesla-api-${self:custom.stage}"
+
+provider:
+  name: aws
+  runtime: python3.8
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Resource: "*"
+          Action:
+            - "sns:*"
+  apiGateway:
+    apiKeys:
+      - name: api_key
+    usagePlan:
+      quota:
+        limit: 2000
+        period: DAY
+      throttle:
+        burstLimit: 100
+        rateLimit: 20
+
+
+functions:
+  backEnd:
+    handler: backend/lambda_function.lambda_handler
+    events:
+      - sns: ${self:custom.topicName}
+
+  frontEnd:
+    handler: frontend/lambda_function.lambda_handler
+    events:
+     - http:
+         path: /command-tesla-api
+         method: post
+         private: true
+    environment:
+      SNS_TOPIC_ARN: { "Fn::Join" : ["", ["arn:aws:sns:${self:custom.region}:", { "Ref" : "AWS::AccountId" }, ":${self:custom.topicName}" ] ]  }
+
+

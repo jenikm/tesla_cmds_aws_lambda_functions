@@ -8,7 +8,36 @@ def lambda_handler(event, context):
   EVENT_BODY = json.loads(event["body"])
   EVENT_HEADERS = event["headers"]
   TOKEN = EVENT_BODY["TOKEN"]
-  VEHICLE_ID = EVENT_BODY["VEHICLE_ID"]
+
+  def resolveVehicleId():
+    # Variables
+    HEADERS = {
+      'Authorization': "Bearer " + TOKEN,
+      'Content-Type': 'application/json',
+      'User-Agent': 'None'
+    }
+    URL = BASE_URL
+    HTTP = urllib3.PoolManager()
+    HTTP_REQUEST = HTTP.request(
+      'GET',
+      URL,
+      headers=HEADERS
+    )
+    HTTP_REQUEST_STATUS_CODE = HTTP_REQUEST.status
+
+    if HTTP_REQUEST_STATUS_CODE == 200:
+      VEHICLE_DATA = json.loads(HTTP_REQUEST.data.decode('utf-8'))
+      IDS = list(map(lambda v : v['id'], VEHICLE_DATA["response"]))
+
+      return {
+          'headers': {'Content-Type': 'application/json'},
+          'body': json.dumps({'vehicle_ids': IDS })
+      }
+
+  VEHICLE_ID = EVENT_BODY.get("VEHICLE_ID")
+  if VEHICLE_ID == None:
+    return resolveVehicleId()
+
   INPUT_CMD = EVENT_BODY["INPUT_CMD"]
   PARAMETER_1 = EVENT_BODY.get("PARAMETER_1", "")
   PARAMETER_2 = EVENT_BODY.get("PARAMETER_2", "")

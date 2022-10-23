@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import json,urllib3,time
+import time
+
 
 def lambda_handler(event, context):
   # Decode pub/sub message body and convert from string back to JSON object
@@ -63,6 +65,25 @@ def lambda_handler(event, context):
 
     return(VEHICLE_DATA)
 
+  # Function that retrieves the vehicle's drive data and returns it
+  def GetVehicleChargeState(BASE_URL, VEHICLE_ID):
+    # Variables
+    HEADERS = {
+      'Authorization': "Bearer " + TOKEN,
+      'Content-Type': 'application/json',
+      'User-Agent': 'None'
+    }
+    URL = BASE_URL + VEHICLE_ID + '/data_request/charge_state'
+    HTTP = urllib3.PoolManager()
+    HTTP_REQUEST = HTTP.request(
+      'GET',
+      URL,
+      headers=HEADERS
+    )
+    CHARGE_DATA = json.loads(HTTP_REQUEST.data.decode('utf-8'))
+
+    return(CHARGE_DATA["response"])
+
   # Function that retrieves the vehicle's status and returns it
   def GetVehicleState(BASE_URL, VEHICLE_ID):
     VEHICLE_DATA = GetVehicleData(BASE_URL, VEHICLE_ID)
@@ -125,11 +146,11 @@ def lambda_handler(event, context):
     # HTTP_REQUEST = URL + HEADERS
     # HTTP_REQUEST_STATUS_CODE = 200
 
+    COUNTER = 0
     if HTTP_REQUEST_STATUS_CODE == 200:
       # Waiting for the vehicle to wake up before returning
       while GetVehicleState(BASE_URL, VEHICLE_ID) != "online":
         # Variables
-        COUNTER = 0
 
         if COUNTER > 20:
           print("ERROR: Exiting as the vehicle is not waking up...")
@@ -140,6 +161,7 @@ def lambda_handler(event, context):
           COUNTER = COUNTER + 1
     else:
       print("ERROR: The vehicle failed to receive the wake up command")
+    print(f"Vehicle woken up after {COUNTER} seconds")
 
   # Function that locks the vehicle's doors
   def LockDoors(BASE_URL, VEHICLE_ID):
@@ -927,7 +949,6 @@ def lambda_handler(event, context):
   # Macro commands
     elif INPUT_CMD == "stop_charging":
       StopCharging(BASE_URL, VEHICLE_ID)
-      OpenChargePortDoor(BASE_URL, VEHICLE_ID)
     elif INPUT_CMD == "start_climate_control_normal" or INPUT_CMD == "start_hvac_normal":
       SetTemps(BASE_URL, VEHICLE_ID, PARAMETER_1)
       StartClimateControl(BASE_URL, VEHICLE_ID)
@@ -943,6 +964,21 @@ def lambda_handler(event, context):
       StopDriverSeatHeater(BASE_URL, VEHICLE_ID)
       StopFrontPassengerSeatHeater(BASE_URL, VEHICLE_ID)
       StopClimateControl(BASE_URL, VEHICLE_ID)
+    elif INPUT_CMD == "charge_with_max_amps":
+      charge_state = GetVehicleChargeState(BASE_URL, VEHICLE_ID)
+      charge_amps = charge_state["charger_actual_current"]
+      target_charge_amps = charge_state["charge_current_request"]
+      charge_volts = charge_state["charger_voltage"]
+      charging_status = charge_state["charging_state"]
+      def show_state(status):
+        print(f"{status} 'charge_with_max_amps' command. Reason: charging_status={charging_status}, charge_volts={charge_volts}, charge_amps={charge_amps}, target_charge_amps={target_charge_amps}")
+      if charging_status == "Charging" and charge_volts > 95 and charge_amps < target_charge_amps:
+        show_state("performing")
+        StopCharging(BASE_URL, VEHICLE_ID)
+        time.sleep(5)
+        StartCharging(BASE_URL, VEHICLE_ID)
+      else:
+        show_state("skipping")
     else:
       print("ERROR: " + INPUT_CMD + " is not a recognized command")
 
