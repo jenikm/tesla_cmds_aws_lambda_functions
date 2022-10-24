@@ -41,6 +41,7 @@ functions:
     handler: backend/lambda_function.lambda_handler
     events:
       - sns: ${self:custom.topicName}
+    timeout: 30
 
   frontEnd:
     handler: frontend/lambda_function.lambda_handler
@@ -51,5 +52,6 @@ functions:
          private: true
     environment:
       SNS_TOPIC_ARN: { "Fn::Join" : ["", ["arn:aws:sns:${self:custom.region}:", { "Ref" : "AWS::AccountId" }, ":${self:custom.topicName}" ] ]  }
+    timeout: 10
 
 
