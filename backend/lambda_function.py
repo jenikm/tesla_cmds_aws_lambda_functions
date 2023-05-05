@@ -65,15 +65,14 @@ def lambda_handler(event, context):
 
     return(VEHICLE_DATA)
 
-  # Function that retrieves the vehicle's drive data and returns it
-  def GetVehicleChargeState(BASE_URL, VEHICLE_ID):
+  def GetVehicleDataV2(BASE_URL, VEHICLE_ID):
     # Variables
     HEADERS = {
       'Authorization': "Bearer " + TOKEN,
       'Content-Type': 'application/json',
       'User-Agent': 'None'
     }
-    URL = BASE_URL + VEHICLE_ID + '/data_request/charge_state'
+    URL = BASE_URL + VEHICLE_ID + '/vehicle_data'
     HTTP = urllib3.PoolManager()
     HTTP_REQUEST = HTTP.request(
       'GET',
@@ -83,6 +82,10 @@ def lambda_handler(event, context):
     CHARGE_DATA = json.loads(HTTP_REQUEST.data.decode('utf-8'))
 
     return(CHARGE_DATA["response"])
+
+  # Function that retrieves the vehicle's drive data and returns it
+  def GetVehicleChargeState(BASE_URL, VEHICLE_ID):
+    return GetVehicleDataV2(BASE_URL, VEHICLE_ID)["charge_state"]
 
   # Function that retrieves the vehicle's status and returns it
   def GetVehicleState(BASE_URL, VEHICLE_ID):
